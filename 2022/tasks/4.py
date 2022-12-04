@@ -14,7 +14,7 @@ def contains_other(elves):
 
 
 def overlap(elves):
-    return elves[1][0] <= elves[0][1] <= elves[1][1] or elves[1][0] <= elves[0][0] <= elves[1][1] or elves[0][0] <= elves[1][1] <= elves[0][1] or elves[0][0] <= elves[1][0] <= elves[0][1]
+    return elves[1][0] <= elves[0][1] <= elves[1][1] or elves[0][0] <= elves[1][1] <= elves[0][1]
 
 
 @time_and_result
