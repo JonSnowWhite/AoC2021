@@ -11,3 +11,26 @@ def time_and_result(f):
         return ret
     return g
 
+
+def test_inputs(task: int) -> list[str]:
+    return inputs(f'../data/task{task}_test.txt')
+
+
+def task_inputs(task: int) -> list[str]:
+    return inputs(f'../data/task{task}.txt')
+
+
+def inputs(file: str) -> list[str]:
+    """
+    Generator that yields all \n-stripped text lines excluding for empty lines.
+    Could probably be done in one line with map and filter
+    """
+    lines = []
+    with open(file, "r") as measurements:
+        for line in measurements:
+            _line = line.strip()
+            if _line == "":
+                continue
+            else:
+                lines += [_line]
+    return lines
