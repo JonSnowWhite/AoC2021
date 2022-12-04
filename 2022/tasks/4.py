@@ -20,7 +20,7 @@ def overlap(elves):
 @time_and_result
 def task1(inputs):
     """
-    Split line/rucksack into two parts, for each letter in first half check if existent in second half
+    extract elf cleanup parts from line 1-2,3-4 and check if one contains the other, count inclusions
     """
     return len(list(filter(lambda x: contains_other(elves_from_line(x)), inputs)))
 
