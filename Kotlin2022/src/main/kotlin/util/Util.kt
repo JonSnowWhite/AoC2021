@@ -1,4 +1,7 @@
+package util
+
 import java.io.File
+import java.lang.NullPointerException
 
 /**
  * Runs the provided task function with the input of the provided day
@@ -27,7 +30,7 @@ fun run(type: Type, day: Int, function: (inputs: List<String>) -> String, output
 
     val endTime = System.currentTimeMillis()
 
-    val expected: String = if (output != null && type==Type.TEST) {
+    val expected: String = if (output != null && type== Type.TEST) {
         " Expected: $output"
     } else {
         ""
@@ -47,5 +50,10 @@ fun getTaskInput(task: Int): List<String>? {
 }
 
 fun getLines (file: String): List<String>? {
-    return (object {}).javaClass.getResourceAsStream(file)?.bufferedReader()?.readLines()
+    return try {
+        File("src/main/resources/$file").readLines()
+    } catch (e: NullPointerException) {
+        null
+    }
+
 }
