@@ -56,7 +56,8 @@ class CPU {
     }
 
     /**
-     *
+     * Draws CPU to screen by checking whether registerValue and its correspondingClockCycle are max off by one.
+     * Considers the line length of 40 both in distance checking and line breaks in output
      */
     fun drawToScreen(): String {
         return "\n${
