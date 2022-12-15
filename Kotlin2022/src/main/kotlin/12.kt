@@ -10,33 +10,37 @@ class TreeNode(var height: Int, val neighbors: MutableList<TreeNode> = mutableLi
     }
 }
 
-class Graph(val nodes: MutableList<TreeNode>, private val startNode: TreeNode, private val endNode: TreeNode) {
+class Graph(private val nodes: MutableList<TreeNode>, private val startNode: TreeNode, private val endNode: TreeNode) {
 
     /**
      * Defaults to startNode for starting node. Wrapper for task 1
      */
     fun getShortestPath(): Int {
-        return getShortestPath(startNode)
+        return getDistancesFromEndNode().filter { it.key.height == 'a'.code }.minOf { it.value }
+    }
+
+    private fun getShortestPathToNode(node: TreeNode): Int {
+        return getDistancesFromEndNode()[node] ?: Int.MAX_VALUE
+    }
+
+    fun getShortestPathToStartNode(): Int {
+        return getShortestPathToNode(startNode)
     }
 
     /**
-     * Breadth first search (every way costs one so we are fine :^), im sure part two doesnt change that...right?)
+     * BFS reverse search to get distance from every node to end node. Allows easy filtering for distance from any node
      */
-    private fun getShortestPath(startNode: TreeNode): Int {
-        val visitedNodes = mutableListOf(startNode)
-        val queue = mutableListOf(startNode)
+    private fun getDistancesFromEndNode(): Map<TreeNode, Int> {
+        val visitedNodes = mutableListOf(endNode)
+        val queue = mutableListOf(endNode)
 
-        val nodeDistances = mutableMapOf(Pair(startNode, 0))
+        val nodeDistances = mutableMapOf(Pair(endNode, 0))
 
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
             node.neighbors.forEach { neighbor ->
                 // we skip visited nodes and the ones that are too high
-                if (neighbor.height - node.height <= 1 && !visitedNodes.contains(neighbor)) {
-                    // return when end reached
-                    if (neighbor == endNode) {
-                        return nodeDistances[node]?.plus(1) ?: -1
-                    }
+                if (node.height - neighbor.height <= 1 && !visitedNodes.contains(neighbor)) {
                     // add neighbor nodes to the ones we want to visit
                     nodeDistances[neighbor] = nodeDistances[node]?.plus(1) ?: -1
                     visitedNodes.add(neighbor)
@@ -44,17 +48,7 @@ class Graph(val nodes: MutableList<TreeNode>, private val startNode: TreeNode, p
                 }
             }
         }
-        // println("No end node found for node. Returning max int value as shortest Path")
-        return Int.MAX_VALUE
-    }
-
-    /**
-     * Start from all possible positions with height a. Just calls the function from task 1. Less efficient than thought.
-     * Cool people would just calculate the distance from the end node to every node with height a and return the
-     * shortest but eeeh...
-     */
-    fun getShortestPathFromAnyLowestPoint(): Int {
-        return nodes.filter { node -> node.height == 'a'.code }.map { getShortestPath(it) }.min()
+        return nodeDistances
     }
 }
 
@@ -120,11 +114,11 @@ fun main() {
 
 
     fun task1(inputs: List<String>): String {
-        return getGraphFromInput(inputs).getShortestPath().toString()
+        return getGraphFromInput(inputs).getShortestPathToStartNode().toString()
     }
 
     fun task2(inputs: List<String>): String {
-        return getGraphFromInput(inputs).getShortestPathFromAnyLowestPoint().toString()
+        return getGraphFromInput(inputs).getShortestPath().toString()
     }
 
     // need different input file, too lazy to make testFile submittable here
