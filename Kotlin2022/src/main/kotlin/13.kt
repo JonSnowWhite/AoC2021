@@ -1,11 +1,5 @@
 import util.Type
 
-enum class Sorted {
-    TRUE,
-    FALSE,
-    UNSURE
-}
-
 /**
  * Can be either a list or an int, one should be set otherwise this makes no sense
  */
