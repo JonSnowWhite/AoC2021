@@ -116,7 +116,7 @@ class Directory(parent: Node?, name: String) : Node(parent, name) {
             }
         }
         if (ownSize < value) {
-            // println("Added dir $name with size $ownSize")
+            // //println("Added dir $name with size $ownSize")
             sum += ownSize
         }
         return listOf(sum, ownSize)

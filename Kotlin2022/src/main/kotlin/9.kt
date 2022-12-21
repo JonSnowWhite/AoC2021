@@ -20,7 +20,7 @@ enum class Direction {
                 "R" -> RIGHT
                 "L" -> LEFT
                 else -> {
-                    println("Could not parse inputs $s to direction, defaulting to UP")
+                    //println("Could not parse inputs $s to direction, defaulting to UP")
                     UP
                 }
             }

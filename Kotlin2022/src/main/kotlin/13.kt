@@ -9,7 +9,7 @@ enum class Sorted {
 /**
  * Can be either a list or an int, one should be set otherwise this makes no sense
  */
-class ListOrInt(var int: Int? = null, var list: MutableList<ListOrInt>? = null) {
+class ListOrInt(var int: Int? = null, var list: MutableList<ListOrInt>? = null) : Comparable<ListOrInt> {
     fun isInt(): Boolean {
         return (int != null)
     }
@@ -49,6 +49,65 @@ class ListOrInt(var int: Int? = null, var list: MutableList<ListOrInt>? = null) 
         }
     }
 
+    override fun compareTo(other: ListOrInt): Int {
+        val left = this
+        val right = other
+        //println("- Compare $left || $right")
+        if (left.isInt() && right.isInt()) {
+            // simple integer comparison
+            return if (left.int!! < right.int!!) {
+                //println("- Left side smaller than right so ordered correctly")
+                -1
+            } else if (right.int!! < left.int!!) {
+                //println("- Left side larger than right so ordered incorrectly")
+                return 1
+            } else {
+                return 0
+            }
+        } else if (left.isList() && right.isList()) {
+            val leftList = left.list!!
+            val rightList = right.list!!
+            // compare each element in list, left list can be shorter than right
+            for (index in leftList.indices) {
+                if (rightList.size <= index) {
+                    // right list runs out of items first so not sorted correctly
+                    //println("- Right side ran out of items so ordered incorrectly")
+                    return 1
+                } else {
+                    // return false if sub-comparison fails
+                    // propagate false and true sorting
+                    val subSorting = leftList[index].compareTo(rightList[index])
+                    if (subSorting < 0) {
+                        return -1
+                    } else if (subSorting > 0) {
+                        return 1
+                    }
+                    // continue when subCompare is indecisive
+                }
+            }
+            // left list ran out of items
+            return if (rightList.size > leftList.size) {
+                //println("- Left side ran out of items so ordered correctly")
+                -1
+            } else {
+                0
+            }
+        } else {
+            // one of both is integer, and we do the comparison by casting it to a list
+            if (left.isInt()) {
+                //println("- Parsing left to list")
+                return ListOrInt(int = null, list = mutableListOf(ListOrInt(int = left.int))).compareTo(right)
+            }
+            if (right.isInt()) {
+                //println("- Parsing right to list")
+                return left.compareTo(ListOrInt(int = null, list = mutableListOf(ListOrInt(int = right.int))))
+            }
+        }
+        // unreachable
+        //println("REACHED UNREACHABLE STATEMENT")
+        return 0
+    }
+
     /**
      * Inefficient but eh
      */
@@ -63,63 +122,6 @@ class ListOrInt(var int: Int? = null, var list: MutableList<ListOrInt>? = null) 
     }
 }
 
-fun compare(left: ListOrInt, right: ListOrInt, indent: Int=0): Sorted {
-    //println("${" ".repeat(indent)}- Compare $left || $right")
-    if (left.isInt() && right.isInt()) {
-        // simple integer comparison
-        return if (left.int!! < right.int!!) {
-            //println("${" ".repeat(indent+1)}- Left side smaller than right so ordered correctly")
-            Sorted.TRUE
-        } else if (right.int!! < left.int!!) {
-            //println("${" ".repeat(indent+1)}- Left side larger than right so ordered incorrectly")
-            Sorted.FALSE
-        } else {
-            Sorted.UNSURE
-        }
-    } else if (left.isList() && right.isList()) {
-        val leftList = left.list!!
-        val rightList = right.list!!
-        // compare each element in list, left list can be shorter than right
-        for (index in leftList.indices) {
-            if (rightList.size <= index) {
-                // right list runs out of items first so not sorted correctly
-                //println("${" ".repeat(indent+1)}- Right side ran out of items so ordered incorrectly")
-                return Sorted.FALSE
-            } else {
-                // return false if sub-comparison fails
-                val subCompare = compare(leftList[index], rightList[index], indent+1)
-                // propagate false and true sorting
-                if (subCompare == Sorted.TRUE) {
-                    return Sorted.TRUE
-                } else if (subCompare == Sorted.FALSE) {
-                    return Sorted.FALSE
-                }
-                // continue when subCompare is indecisive
-            }
-        }
-        // left list ran out of items
-        return if (rightList.size > leftList.size) {
-            //println("${" ".repeat(indent+1)}- Left side ran out of items so ordered correctly")
-            Sorted.TRUE
-        } else {
-            Sorted.UNSURE
-        }
-    } else {
-        // one of both is integer, and we do the comparison by casting it to a list
-        if (left.isInt()) {
-            //println("${" ".repeat(indent)}- Parsing left to list")
-            return compare(ListOrInt(int = null, list = mutableListOf(ListOrInt(int = left.int))), right, indent+1)
-        }
-        if (right.isInt()) {
-            //println("${" ".repeat(indent)}- Parsing right to list")
-            return compare(left, ListOrInt(int = null, list = mutableListOf(ListOrInt(int = right.int))), indent+1)
-        }
-    }
-    // unreachable
-    //println("REACHED UNREACHABLE STATEMENT")
-    return Sorted.UNSURE
-}
-
 fun getNumberOfOrderedPairs(inputs: List<String>): Int {
     var sum = 0
     var pair = 0
@@ -128,8 +130,7 @@ fun getNumberOfOrderedPairs(inputs: List<String>): Int {
         //println("\n=== Pair $pair ===")
         val left = inputs[index]
         val right = inputs[index + 1]
-        val compareValue = compare(ListOrInt(left), ListOrInt(right))
-        if (compareValue == Sorted.TRUE) {
+        if (ListOrInt(left) < ListOrInt(right)) {
             sum += pair
         }
     }
@@ -148,12 +149,13 @@ fun main() {
     }
 
     fun task2(inputs: List<String>): String {
-        // TODO: sort this
-        val lists: MutableList<ListOrInt> = inputs.map { x -> ListOrInt(x) }.toMutableList()
-        lists.add(ListOrInt("[[2]"))
-        lists.add(ListOrInt("[[6]"))
-
-
+        val lists: MutableList<ListOrInt> = inputs.filter { x -> x != "" }.map { x -> ListOrInt(x) }.toMutableList()
+        val divider1 = ListOrInt("[[2]]")
+        val divider2 = ListOrInt("[[6]]")
+        lists.add(divider1)
+        lists.add(divider2)
+        lists.sort()
+        return ((lists.indexOf(divider1)+1) * (lists.indexOf(divider2)+1)).toString()
     }
 
     // need different input file, too lazy to make testFile submittable here
