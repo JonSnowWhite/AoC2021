@@ -1,24 +1,73 @@
 import util.Type
 
+class WrapList(private val values: MutableList<Int>) {
+
+    // holds the original index for every current index
+    // for example when the first two values get swapped in the first step we change map[0] = 0 to map[0] = 1
+    private val originalIndex = MutableList<Int>(values.size) { it }
+
+    /**
+     * Swaps values at specified indices a and b
+     */
+    private fun swapValues(a: Int, b: Int) {
+        val tmp = values[a]
+        val tmpOriginalIndex = originalIndex[a]
+        values[a] = values[b]
+        originalIndex[a] = b
+
+        values[b] = tmp
+        originalIndex[b] = tmpOriginalIndex
+
+    }
+    private fun moveRight(fromIndex: Int, steps: Int) {
+        (0 until steps).forEach {
+            swapValues((fromIndex + it) % values.size, (fromIndex + it + 1) % values.size)
+        }
+    }
+
+    private fun moveLeft(fromIndex: Int, steps: Int) {
+        (0 until steps).forEach {
+            swapValues((fromIndex - it) % values.size, (fromIndex - it - 1) % values.size)
+        }
+    }
+
+    fun sortAllValues() {
+        values.indices.forEach {
+            val indexToMoveFrom = originalIndex.indexOf(it)
+            val steps = values[indexToMoveFrom]
+            if (steps < 0) {
+                moveLeft(indexToMoveFrom, -steps)
+            } else {
+                moveRight(indexToMoveFrom, steps)
+            }
+        }
+    }
+
+    /**
+     * Returns value at index n after value 0
+     */
+    private fun getValue(n: Int): Int {
+        return values[(values.indexOf(0)+n) % values.size]
+    }
+
+    fun getValues(valuesToExtract: List<Int>): Int {
+        return valuesToExtract.sumOf { getValue(it) }
+    }
+}
+
 fun main() {
 
-    val day = 13
-    val testOutput1 = "13"
-    val testOutput2 = "140"
+    val day = 20
+    val testOutput1 = "3"
+    val testOutput2 = "?"
 
 
     fun task1(inputs: List<String>): String {
-        return getNumberOfOrderedPairs(inputs).toString()
+        return WrapList(inputs.map { it.toInt() }.toMutableList()).getValues(listOf(1000,2000,3000)).toString()
     }
 
     fun task2(inputs: List<String>): String {
-        val lists: MutableList<ListOrInt> = inputs.filter { x -> x != "" }.map { x -> ListOrInt(x) }.toMutableList()
-        val divider1 = ListOrInt("[[2]]")
-        val divider2 = ListOrInt("[[6]]")
-        lists.add(divider1)
-        lists.add(divider2)
-        lists.sort()
-        return ((lists.indexOf(divider1)+1) * (lists.indexOf(divider2)+1)).toString()
+        return ""
     }
 
     // need different input file, too lazy to make testFile submittable here
